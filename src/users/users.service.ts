@@ -3,6 +3,8 @@ import { CustomHttpException } from 'src/common/exceptions/custom.exception';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './user.model';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { UserDto } from './dto/user.dto';
+import { GetUsersDataDto } from './dto/users-data.dto';
 
 @Injectable()
 export class UsersService {
@@ -15,8 +17,17 @@ export class UsersService {
     return this.userModel.create(dto);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.findAll();
+  async findAll(): Promise<{
+    success: boolean;
+    message: string;
+    data: GetUsersDataDto
+  }> {
+    const users = await this.userModel.findAll();
+
+    // Convert Sequelize instances to plain objects
+    const userDtos = users.map(user => user.get({ plain: true }));
+
+    return { success: true, message: "successful", data: { users: userDtos } };
   }
 
   async findById(id: number): Promise<User | null> {

@@ -11,13 +11,19 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './users/user.model';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-
+import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, jwtConfig],
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: seconds(60),
+        limit: 10,
+      },
+    ]),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -42,7 +48,9 @@ import { AuthModule } from './auth/auth.module';
   controllers: [AppController],
   providers: [
     AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },],
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule { }

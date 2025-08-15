@@ -4,6 +4,8 @@ import { RegisterUserDto } from 'src/users/dto/register-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
+import { UserDto } from 'src/users/dto/user.dto';
+import { LoginDataDto, RegisterUserDataDto } from './dto/data-dto';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +14,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) { }
 
-    async register(dto: RegisterUserDto) {
+    async register(dto: RegisterUserDto): Promise<{ success: boolean; message: string; data: RegisterUserDataDto; }> {
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
             throw new BadRequestException('Email is already taken');
@@ -27,15 +29,15 @@ export class AuthService {
             password: hashedPassword
         });
 
-        if (!user) return { success: false, message: 'Error registering user' }
+        if (!user) return { success: false, message: 'Error registering user', data: {} }
         return {
             success: true,
             message: 'User registered successfully',
-            data: user,
+            data: { user },
         };
     }
 
-    async login(dto: LoginDto) {
+    async login(dto: LoginDto): Promise<{ success: boolean; message: string; data: LoginDataDto; }> {
         const { email, password } = dto
         const user = await this.usersService.findByEmail(email);
         if (!user) {
@@ -43,7 +45,7 @@ export class AuthService {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        
+
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
