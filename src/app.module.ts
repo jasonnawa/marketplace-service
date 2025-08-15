@@ -1,17 +1,22 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from './config/database.config';
+import jwtConfig from './config/jwt.config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './users/user.model';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, jwtConfig],
     }),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
@@ -31,9 +36,13 @@ import { UsersModule } from './users/users.module';
         };
       },
     }),
-    UsersModule
+    UsersModule,
+    AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },],
 })
 export class AppModule { }

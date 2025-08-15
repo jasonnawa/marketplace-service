@@ -1,12 +1,33 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, DefaultScope } from 'sequelize-typescript';
+import { UserRole } from './enums/user-role.enum';
 
-@Table
-export class User extends Model<User> {
+export interface UserCreationAttrs {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+@DefaultScope(() => ({
+  attributes: { exclude: ['password'] },
+}))
+@Table({
+  tableName: 'users',
+  timestamps: true, 
+})
+export class User extends Model<User, UserCreationAttrs> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string;
+  firstname: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  lastname: string;
 
   @Column({
     type: DataType.STRING,
@@ -14,4 +35,17 @@ export class User extends Model<User> {
     unique: true,
   })
   email: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  password: string;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(UserRole)),
+    allowNull: false,
+    defaultValue: UserRole.USER,
+  })
+  role: UserRole;
 }
