@@ -12,6 +12,8 @@ import { User } from './users/user.model';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ProductsModule } from './products/products.module';
+import { Product } from './products/product.model';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,12 +40,13 @@ import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
           database: db.name,
           autoLoadModels: true,
           synchronize: true,
-          models: [User],
+          models: [User, Product],
         };
       },
     }),
     UsersModule,
-    AuthModule
+    AuthModule,
+    ProductsModule
   ],
   controllers: [AppController],
   providers: [

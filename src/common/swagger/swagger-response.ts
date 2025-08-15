@@ -28,8 +28,41 @@ export const ApiResponseWrapper = <TModel extends Type<any>>(
         },
       },
     }),
-    ApiBadRequestResponse({ description: 'Bad Request', type: ErrorResponseDto }),
-    ApiUnauthorizedResponse({ description: 'Unauthorized', type: ErrorResponseDto }),
-    ApiNotFoundResponse({ description: 'Not Found', type: ErrorResponseDto }),
+
+    ApiBadRequestResponse({
+      description: 'Bad Request',
+      schema: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          message: { type: 'string', example: 'Validation failed: Missing required fields' },
+          data: { type: 'object', example: {} },
+        },
+      },
+    }),
+
+    ApiUnauthorizedResponse({
+      description: 'Unauthorized',
+      schema: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          message: { type: 'string', example: 'Invalid credentials' },
+          data: { type: 'object', example: {} },
+        },
+      },
+    }),
+
+    ApiNotFoundResponse({
+      description: 'Not Found',
+      schema: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: false },
+          message: { type: 'string', example: 'Resource not found' },
+          data: { type: 'object', example: {} },
+        },
+      },
+    }),
   );
 };

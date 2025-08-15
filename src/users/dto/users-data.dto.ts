@@ -1,4 +1,3 @@
-// users-data.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { UserDto } from './user.dto';
 
