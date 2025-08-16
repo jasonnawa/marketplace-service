@@ -5,8 +5,11 @@ import {
     DataType,
     PrimaryKey,
     AutoIncrement,
+    BelongsToMany,
+    HasMany,
 } from 'sequelize-typescript';
 import { ProductCategory } from './enums/product-category.enum';
+import { CartItem } from 'src/cart/models/cart-item.model';
 
 interface ProductCreationAttrs {
     name: string;
@@ -63,4 +66,7 @@ export class Product extends Model<Product, ProductCreationAttrs> {
         defaultValue: [],
     })
     images: string[];
+
+    @HasMany(() => CartItem)
+    cartItems: CartItem[];
 }

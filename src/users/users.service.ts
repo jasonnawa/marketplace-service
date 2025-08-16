@@ -22,11 +22,28 @@ export class UsersService {
     message: string;
     data: GetUsersDataDto
   }> {
-    const users = await this.userModel.findAll();
+    const users = await this.userModel.findAll({
+      include: [{ all: true, nested: true }],
+    });
 
-    // Convert Sequelize instances to plain objects
-    const userDtos = users.map(user => user.get({ plain: true }));
+    const userDtos = users.map(user => {
+      const plainUser = user.get({ plain: true });
 
+      return {
+        ...plainUser,
+        cart: plainUser.cart
+          ? {
+            id: plainUser.cart.id,
+            userId: plainUser.cart.userId,
+            items: plainUser.cart.items?.map(item => ({
+              id: item.id,
+              product: item.product,
+              quantity: item.quantity,
+            })) || [],
+          }
+          : undefined,
+      };
+    });
     return { success: true, message: "successful", data: { users: userDtos } };
   }
 

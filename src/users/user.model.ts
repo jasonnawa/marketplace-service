@@ -1,5 +1,6 @@
-import { Table, Column, Model, DataType, DefaultScope } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, DefaultScope, HasOne } from 'sequelize-typescript';
 import { UserRole } from './enums/user-role.enum';
+import { Cart } from 'src/cart/models/cart.model';
 
 export interface UserCreationAttrs {
   firstname: string;
@@ -14,7 +15,7 @@ export interface UserCreationAttrs {
 }))
 @Table({
   tableName: 'users',
-  timestamps: true, 
+  timestamps: true,
 })
 export class User extends Model<User, UserCreationAttrs> {
   @Column({
@@ -48,4 +49,7 @@ export class User extends Model<User, UserCreationAttrs> {
     defaultValue: UserRole.USER,
   })
   role: UserRole;
+
+  @HasOne(() => Cart)
+  cart?: Cart;
 }

@@ -9,7 +9,7 @@ import { Op } from 'sequelize';
 export class ProductsService {
     constructor(@InjectModel(Product) private productModel: typeof Product) { }
 
-    async getProducts(query: GetProductsQueryDto): Promise<{success: boolean, message: string, data: GetAllProductDataDto}> {
+    async getProducts(query: GetProductsQueryDto): Promise<{ success: boolean, message: string, data: GetAllProductDataDto }> {
         const { page = 1, limit = 10, search, category, minPrice, maxPrice } = query;
         const where: any = {};
 
@@ -54,6 +54,11 @@ export class ProductsService {
             throw new Error('Product not found');
         }
         return { success: true, message: 'successfully fetched product', data: { product } };
+    }
+
+    async getProductByIdOrUndefined(id: number) {
+        const product = await this.productModel.findByPk(id);
+        return product
     }
 
 

@@ -22,18 +22,41 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-        const user = await this.usersService.create({
+        let user = await this.usersService.create({
             firstname: dto.firstname,
             lastname: dto.lastname,
             email: dto.email,
-            password: hashedPassword
+            password: hashedPassword,
         });
 
-        if (!user) return { success: false, message: 'Error registering user', data: {} }
+        // Handle failure
+        if (!user) {
+            return { success: false, message: 'Error registering user', data: {} };
+        }
+
+        // Convert user to plain object
+        const plainUser = user.get({ plain: true });
+
+        // Map nested cart to match CartDto
+        const userDto = {
+            ...plainUser,
+            cart: plainUser.cart
+                ? {
+                    id: plainUser.cart.id,      
+                    userId: plainUser.cart.userId,
+                    items: plainUser.cart.items?.map(item => ({
+                        id: item.id,
+                        product: item.product,     
+                        quantity: item.quantity,
+                    })) || [],
+                }
+                : undefined,
+        };
+
         return {
             success: true,
             message: 'User registered successfully',
-            data: { user },
+            data: { user: userDto },
         };
     }
 

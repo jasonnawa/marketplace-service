@@ -14,6 +14,9 @@ import { AuthModule } from './auth/auth.module';
 import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ProductsModule } from './products/products.module';
 import { Product } from './products/product.model';
+import { CartModule } from './cart/cart.module';
+import { Cart } from './cart/models/cart.model';
+import { CartItem } from './cart/models/cart-item.model';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,13 +43,14 @@ import { Product } from './products/product.model';
           database: db.name,
           autoLoadModels: true,
           synchronize: true,
-          models: [User, Product],
+          models: [User, Product, Cart, CartItem],
         };
       },
     }),
     UsersModule,
     AuthModule,
-    ProductsModule
+    ProductsModule,
+    CartModule
   ],
   controllers: [AppController],
   providers: [
