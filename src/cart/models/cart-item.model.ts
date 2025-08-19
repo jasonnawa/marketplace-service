@@ -1,6 +1,6 @@
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 import { Cart } from './cart.model';
-import { Product } from 'src/products/product.model';
+import { Product } from '../../products/product.model';
 
 export interface CartItemCreationAttrs {
   cartId: number;       

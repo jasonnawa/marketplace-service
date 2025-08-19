@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, DefaultScope, HasOne } from 'sequelize-typescript';
 import { UserRole } from './enums/user-role.enum';
-import { Cart } from 'src/cart/models/cart.model';
+import { Cart } from '../cart/models/cart.model';
 
 export interface UserCreationAttrs {
   firstname: string;

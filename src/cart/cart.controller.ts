@@ -43,11 +43,4 @@ export class CartController {
         return this.cartService.cloneCart(req.user.id, dto);
     }
 
-    @ApiBearerAuth('access-token')
-    @Delete(':productId')
-    @ApiOperation({ summary: 'Delete\'s an item from the cart' })
-    @ApiResponseWrapper(GetUnitCartDataDto, 'user\s cart')
-    removeItem(@Req() req, @Param('productId') productId: number) {
-        return this.cartService.removeItem(req.user.id, productId);
-    }
 }

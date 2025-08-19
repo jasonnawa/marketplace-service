@@ -2,7 +2,7 @@ import { Controller, Get, Post, Param, Req } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { GetUserOrdersDataDto, GetUserUnitOrderDataDto } from './dto/order-data.dto';
-import { ApiResponseWrapper } from 'src/common/swagger/swagger-response';
+import { ApiResponseWrapper } from '../common/swagger/swagger-response';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')

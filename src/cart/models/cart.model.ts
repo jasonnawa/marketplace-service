@@ -1,5 +1,5 @@
 import { Table, Column, Model, ForeignKey, BelongsTo, HasMany, DataType } from 'sequelize-typescript';
-import { User } from 'src/users/user.model';
+import { User } from '../../users/user.model';
 import { CartItem } from './cart-item.model';
 import { CartItemCreationAttrs } from './cart-item.model';
 

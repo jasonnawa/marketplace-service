@@ -1,5 +1,5 @@
 import { Table, Column, Model, ForeignKey, BelongsTo, HasMany, DataType } from 'sequelize-typescript';
-import { User } from 'src/users/user.model';
+import { User } from '../../users/user.model';
 import { OrderItem } from './order-item.model';
 import { OrderStatus } from '../enums/order-status.enum';
 

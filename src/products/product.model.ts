@@ -9,7 +9,7 @@ import {
     HasMany,
 } from 'sequelize-typescript';
 import { ProductCategory } from './enums/product-category.enum';
-import { CartItem } from 'src/cart/models/cart-item.model';
+import { CartItem } from '../cart/models/cart-item.model';
 
 interface ProductCreationAttrs {
     name: string;

@@ -1,17 +1,22 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Order, OrderCreationAttrs } from './models/order.model';
-import { OrderItem, OrderItemCreationAttrs } from './models/order-item.model';
+import { OrderItem } from './models/order-item.model';
 import { CartService } from '../cart/cart.service';
 import { Product } from '../products/product.model';
 import { GetUserOrdersDataDto, GetUserUnitOrderDataDto } from './dto/order-data.dto';
 import { mapOrderToDto } from './helper/order-mapper.helper';
+import { Sequelize } from 'sequelize-typescript';
+import { ProductsService } from '../products/products.service';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class OrdersService {
     constructor(
         @InjectModel(Order) private orderModel: typeof Order,
         @InjectModel(OrderItem) private orderItemModel: typeof OrderItem,
+        @Inject(ProductsService) private productService: ProductsService,
+        private readonly sequelize: Sequelize,
         private readonly cartService: CartService,
     ) { }
 
@@ -22,18 +27,19 @@ export class OrdersService {
             order: [['createdAt', 'DESC']],
         });
 
-        const ordersDto = allOrdersInstance.map((order) =>{
-            order = order.get({plain: true})
+        const ordersDto = allOrdersInstance.map((order) => {
+            order = order.get({ plain: true })
             return mapOrderToDto(order)
         })
 
         return { success: true, message: 'orders fetched successfully', data: { orders: ordersDto } }
     }
 
-    async getOneOrder(userId: number, orderId: number): Promise<{ success: boolean, message: string, data: GetUserUnitOrderDataDto }> {
+    async getOneOrder(userId: number, orderId: number, transaction?: Transaction): Promise<{ success: boolean, message: string, data: GetUserUnitOrderDataDto }> {
         const orderInstance = await this.orderModel.findOne({
             where: { id: orderId, userId },
             include: [{ model: OrderItem, include: [Product] }],
+            transaction
         });
         if (!orderInstance) throw new NotFoundException('Order not found');
         const order = orderInstance.get({ plain: true });
@@ -43,8 +49,12 @@ export class OrdersService {
     }
 
 
-    async createOrderFromCart(userId: number): Promise<{ success: boolean, message: string, data: GetUserUnitOrderDataDto }> {
-        try {
+
+    async createOrderFromCart(
+        userId: number,
+    ): Promise<{ success: boolean; message: string; data: GetUserUnitOrderDataDto }> {
+
+        return this.sequelize.transaction(async (t) => {
             const cartResponse = await this.cartService.getCart(userId);
             const cart = cartResponse.data.cart;
 
@@ -56,12 +66,31 @@ export class OrdersService {
             const orderItemsData: any[] = [];
 
             for (const item of cart.items) {
-                subtotal += item.quantity * item.product.price;
+                const product = await this.productService.findByIdWithLock(item.product.id, t);
+
+                if (!product) {
+                    throw new NotFoundException(`Product ${item.product.id} not found`);
+                }
+
+                const plainProduct = product.get({ plain: true });
+
+                // Validate stock
+                if (item.quantity > plainProduct.stock) {
+                    throw new BadRequestException(
+                        `Not enough stock for ${product.name}. Available: ${product.stock}`,
+                    );
+                }
+
+                // Deduct stock
+                const newStock = plainProduct.stock - item.quantity;
+                const updatedProduct = await product.update({ stock: newStock }, { transaction: t });
+
+                subtotal += item.quantity * plainProduct.price;
                 orderItemsData.push({
                     orderId: null, // placeholder
-                    productId: item.product.id,
+                    productId: plainProduct.id,
                     quantity: item.quantity,
-                    price: item.product.price,
+                    price: plainProduct.price,
                 });
             }
 
@@ -74,19 +103,19 @@ export class OrdersService {
                 tax,
                 total,
             };
-            const order = await this.orderModel.create(orderAttrs);
 
+            // Create order in same transaction
+            const order = await this.orderModel.create(orderAttrs, { transaction: t });
+
+            // Create order items
             const itemsToCreate = orderItemsData.map((i) => ({ ...i, orderId: order.id }));
-            await this.orderItemModel.bulkCreate(itemsToCreate);
+            await this.orderItemModel.bulkCreate(itemsToCreate, { transaction: t });
 
-            // clear user's cart
-            await this.cartService.clearCart(cart.id);
+            // Clear cart
+            await this.cartService.clearCart(cart.id, t);
 
-            return this.getOneOrder(userId, order.id);
-        } catch (err) {
-            console.error(err);
-            throw new InternalServerErrorException('Failed to create order from cart');
-        }
+            return this.getOneOrder(userId, order.id, t);
+        });
     }
 
 }
