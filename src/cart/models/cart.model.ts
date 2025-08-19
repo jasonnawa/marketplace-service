@@ -26,4 +26,25 @@ export class Cart extends Model<Cart, CartCreationAttrs> {
 
   @HasMany(() => CartItem)
   items?: CartItem[];
+
+   @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.0,
+  })
+  subtotal: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.0,
+  })
+  tax: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.0,
+  })
+  total: number;
 }

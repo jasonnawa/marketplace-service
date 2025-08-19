@@ -9,6 +9,7 @@ import { ProductsModule } from 'src/products/products.module';
 @Module({
   imports: [SequelizeModule.forFeature([Cart, CartItem]), ProductsModule],
   controllers: [CartController],
-  providers: [CartService]
+  providers: [CartService],
+  exports:[CartService]
 })
 export class CartModule {}

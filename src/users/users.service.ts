@@ -5,6 +5,7 @@ import { User } from './user.model';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserDto } from './dto/user.dto';
 import { GetUsersDataDto } from './dto/users-data.dto';
+import { mapUserToDto } from './helpers/user-dto-mapper';
 
 @Injectable()
 export class UsersService {
@@ -26,24 +27,7 @@ export class UsersService {
       include: [{ all: true, nested: true }],
     });
 
-    const userDtos = users.map(user => {
-      const plainUser = user.get({ plain: true });
-
-      return {
-        ...plainUser,
-        cart: plainUser.cart
-          ? {
-            id: plainUser.cart.id,
-            userId: plainUser.cart.userId,
-            items: plainUser.cart.items?.map(item => ({
-              id: item.id,
-              product: item.product,
-              quantity: item.quantity,
-            })) || [],
-          }
-          : undefined,
-      };
-    });
+    const userDtos = users.map(user => mapUserToDto(user));
     return { success: true, message: "successful", data: { users: userDtos } };
   }
 
@@ -54,9 +38,21 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.userModel.findOne({
       where: { email },
-      attributes: ['id', 'firstname', 'lastname', 'email', 'password', 'role', 'createdAt', 'updatedAt'],
+      attributes: [
+        'id',
+        'firstname',
+        'lastname',
+        'email',
+        'password',
+        'role',
+        'createdAt',
+        'updatedAt',
+      ],
+      include: { all: true, nested: true },
     });
-    return user?.get({ plain: true }) || null;
+
+    return user;
   }
+
 
 }

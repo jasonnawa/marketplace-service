@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ProductCategory } from '../enums/product-category.enum';
 
@@ -20,10 +20,20 @@ export class GetProductsQueryDto {
     @IsString()
     search?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by product category', example: 'Electronics' })
+    @ApiPropertyOptional({
+        description: 'Filter by product categories (can pass multiple)',
+        example: ['Electronics', 'Books'],
+        isArray: true,
+        enum: ProductCategory,
+    })
     @IsOptional()
-    @IsEnum(ProductCategory, { message: 'Invalid category' })
-    category?: ProductCategory;
+    @IsEnum(ProductCategory, { each: true, message: 'Invalid category' })
+    @Transform(({ value }) => {
+        if (value === undefined || value === null) return undefined;
+        if (Array.isArray(value)) return value;
+        return [value];
+    })
+    category?: ProductCategory[];
 
     @ApiPropertyOptional({ description: 'Minimum price filter', example: 100 })
     @IsOptional()

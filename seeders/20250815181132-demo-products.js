@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert('products', [
       {
         name: 'Wireless Mouse',
@@ -9,7 +9,7 @@ module.exports = {
         price: 19.99,
         stock: 50,
         category: 'electronics',
-        images: ['https://example.com/images/mouse1.jpg'],
+        images: ['https://images.unsplash.com/photo-1754762372291-4e138559c09f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8d2lyZSUyMGxlc3MlMjBtb3VzZXxlbnwwfHwwfHx8MA%3D%3D'],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -19,11 +19,65 @@ module.exports = {
         price: 79.99,
         stock: 30,
         category: 'electronics',
-        images: ['https://example.com/images/headphones1.jpg'],
+        images: ['https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Qmx1ZXRvb3RoJTIwSGVhZHBob25lc3xlbnwwfHwwfHx8MA%3D%3D'],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
+        name: 'Smartphone Stand',
+        description: 'Adjustable stand for smartphones and tablets.',
+        price: 14.99,
+        stock: 40,
+        category: 'electronics',
+        images: ['https://plus.unsplash.com/premium_photo-1664301431270-682e34f2055a?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'USB-C Charger',
+        description: 'Fast charging USB-C wall charger.',
+        price: 29.99,
+        stock: 60,
+        category: 'electronics',
+        images: ['https://plus.unsplash.com/premium_photo-1669261149433-febd56c05327?q=80&w=830&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+      // CLOTHING
+      {
+        name: 'Jeans',
+        description: 'Classic blue jeans for everyday wear.',
+        price: 49.99,
+        stock: 60,
+        category: 'clothing',
+        images: ['https://images.unsplash.com/photo-1604176354204-9268737828e4?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Hoodie',
+        description: 'Warm hoodie for winter seasons.',
+        price: 39.99,
+        stock: 50,
+        category: 'clothing',
+        images: ['https://plus.unsplash.com/premium_photo-1673356302169-574db56b52cd?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Sneakers',
+        description: 'Stylish sneakers for casual wear.',
+        price: 69.99,
+        stock: 35,
+        category: 'clothing',
+        images: ['https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+      // HOME
+       {
         name: 'Coffee Mug',
         description: 'Ceramic coffee mug with a sleek design.',
         price: 9.99,
@@ -32,11 +86,127 @@ module.exports = {
         images: Sequelize.literal(`ARRAY[]::VARCHAR[]`),
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      },
+      {
+        name: 'Desk Lamp',
+        description: 'LED desk lamp with adjustable brightness.',
+        price: 24.99,
+        stock: 50,
+        category: 'home',
+        images: ['https://images.unsplash.com/photo-1588706235076-627d896e9f67?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGhyb3clMjBwaWxsb3d8ZW58MHx8MHx8fDA%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Throw Pillow',
+        description: 'Soft and colorful throw pillow for your couch.',
+        price: 19.99,
+        stock: 70,
+        category: 'home',
+        images: ['https://images.unsplash.com/photo-1588706235076-627d896e9f67?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGhyb3clMjBwaWxsb3d8ZW58MHx8MHx8fDA%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+      // BOOKS
+      {
+        name: 'JavaScript Guide',
+        description: 'Comprehensive guide to modern JavaScript.',
+        price: 29.99,
+        stock: 40,
+        category: 'books',
+        images: ['https://images.unsplash.com/photo-1565229284535-2cbbe3049123?q=80&w=930&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Learning Python',
+        description: 'Beginner to advanced Python programming.',
+        price: 34.99,
+        stock: 35,
+        category: 'books',
+        images: ['https://images.unsplash.com/photo-1607799279861-4dd421887fb3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'History of Art',
+        description: 'Explore the world of art through the centuries.',
+        price: 39.99,
+        stock: 25,
+        category: 'books',
+        images: ['https://images.unsplash.com/photo-1742495175622-83a80caabb62?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+      // BEAUTY
+      {
+        name: 'Face Cream',
+        description: 'Moisturizing face cream for daily use.',
+        price: 24.99,
+        stock: 60,
+        category: 'beauty',
+        images: ['https://images.unsplash.com/photo-1691162332194-72f2ddfa4813?q=80&w=1044&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Lipstick Set',
+        description: 'Set of 5 vibrant lipstick shades.',
+        price: 19.99,
+        stock: 50,
+        category: 'beauty',
+        images: ['https://images.unsplash.com/photo-1606231541998-dfc5fe52a45a?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Shampoo',
+        description: 'Herbal shampoo for healthy hair.',
+        price: 14.99,
+        stock: 70,
+        category: 'beauty',
+        images: ['https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+      // SPORTS
+      {
+        name: 'Yoga Mat',
+        description: 'Non-slip yoga mat for all exercises.',
+        price: 29.99,
+        stock: 40,
+        category: 'sports',
+        images: ['https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Dumbbell Set',
+        description: 'Adjustable dumbbells for strength training.',
+        price: 59.99,
+        stock: 30,
+        category: 'sports',
+        images: ['https://plus.unsplash.com/premium_photo-1671028546491-f70b21a32cc2?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Running Shoes',
+        description: 'Lightweight running shoes for daily workouts.',
+        price: 89.99,
+        stock: 25,
+        category: 'sports',
+        images: ['https://plus.unsplash.com/premium_photo-1682435561654-20d84cef00eb?q=80&w=1018&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ], {});
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('products', null, {});
   }
 };

@@ -21,5 +21,8 @@ export function mapCartToDto(cart: Cart): CartDto {
         images: item.product.images,
       },
     })) || [],
+    subtotal: plainCart.subtotal,
+    tax: plainCart.tax,
+    total: plainCart.total,
   };
 }

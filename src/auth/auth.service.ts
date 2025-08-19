@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { UserDto } from 'src/users/dto/user.dto';
 import { LoginDataDto, RegisterUserDataDto } from './dto/data-dto';
+import { mapUserToDto } from 'src/users/helpers/user-dto-mapper';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     ) { }
 
     async register(dto: RegisterUserDto): Promise<{ success: boolean; message: string; data: RegisterUserDataDto; }> {
+        try{
         const existing = await this.usersService.findByEmail(dto.email);
         if (existing) {
             throw new BadRequestException('Email is already taken');
@@ -34,60 +36,54 @@ export class AuthService {
             return { success: false, message: 'Error registering user', data: {} };
         }
 
-        // Convert user to plain object
-        const plainUser = user.get({ plain: true });
-
-        // Map nested cart to match CartDto
-        const userDto = {
-            ...plainUser,
-            cart: plainUser.cart
-                ? {
-                    id: plainUser.cart.id,      
-                    userId: plainUser.cart.userId,
-                    items: plainUser.cart.items?.map(item => ({
-                        id: item.id,
-                        product: item.product,     
-                        quantity: item.quantity,
-                    })) || [],
-                }
-                : undefined,
-        };
+        const userDto = mapUserToDto(user)
 
         return {
             success: true,
             message: 'User registered successfully',
             data: { user: userDto },
         };
+    }catch(err){
+        console.error(err)
+        throw(err)
+    }
     }
 
     async login(dto: LoginDto): Promise<{ success: boolean; message: string; data: LoginDataDto; }> {
+        try{
         const { email, password } = dto
         const user = await this.usersService.findByEmail(email);
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
+        const parsedUser = mapUserToDto(user)
+        const isPasswordValid = await bcrypt.compare(password, user.dataValues.password);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
         const payload = {
-            sub: user.id,
-            email: user.email,
-            role: user.role,
+            sub: parsedUser.id,
+            email: parsedUser.email,
+            role: parsedUser.role,
         };
 
         const token = await this.jwtService.signAsync(payload);
+
+        
 
         return {
             success: true,
             message: 'Login successful',
             data: {
+                user: parsedUser,
                 access_token: token,
                 expires_in: '30 days',
             },
         };
+    }catch(err){
+        console.error(err)
+        throw(err)
+    }
     }
 }

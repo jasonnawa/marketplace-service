@@ -9,6 +9,7 @@ import { mapCartToDto } from './helper/cart-dto-mapper';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { ReduceCartItemDto } from './dto/reduce-cart.dto';
 import { CloneCartDto } from './dto/clone-cart.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CartService {
@@ -16,6 +17,7 @@ export class CartService {
         @InjectModel(Cart) private cartModel: typeof Cart,
         @InjectModel(CartItem) private cartItemModel: typeof CartItem,
         @Inject(ProductsService) private productsService: ProductsService,
+        @Inject(ConfigService) private configService: ConfigService,
     ) { }
 
     async getCart(userId: number): Promise<{ success: boolean; message: string; data: GetUnitCartDataDto }> {
@@ -28,121 +30,141 @@ export class CartService {
             cart = await this.cartModel.create({ userId }, { include: [CartItem] });
         }
 
-        const cartDto = mapCartToDto(cart);
+        const plainCart = cart.get({ plain: true });
+        let subtotal = 0;
+        if (plainCart.items && plainCart.items.length > 0) {
+            for (const item of plainCart.items) {
+                if (item.product) {
+                    subtotal += item.product.price * item.quantity;
+                }
+            }
+        }
 
-        return {
-            success: true,
-            message: 'Cart fetched successfully',
-            data: { cart: cartDto },
-        };
-    }
+            const taxRate = this.configService.get<number>('taxOptions.taxRate') || 0.1;
+            const tax = subtotal * taxRate;
+            const total = subtotal + tax;
 
-    async addItem(userId: number, dto: AddToCartDto): Promise<{ success: boolean; message: string; data: GetUnitCartDataDto }> {
-        try {
-            const getCartResponse = await this.getCart(userId)
+            // ✅ Persist totals in the cart model
+            await cart.update({ subtotal, tax, total });
+
+            const cartDto = mapCartToDto(cart);
+
+            return {
+                success: true,
+                message: 'Cart fetched successfully',
+                data: { cart: cartDto },
+            };
+        }
+
+    async addItem(userId: number, dto: AddToCartDto): Promise < { success: boolean; message: string; data: GetUnitCartDataDto } > {
+            try {
+                const getCartResponse = await this.getCart(userId)
             const cart = getCartResponse.data.cart
             const getProductResponse = await this.productsService.getProductById(dto.productId)
-            if (!getProductResponse.success) throw new NotFoundException('Product not found')
+            if(!getProductResponse.success) throw new NotFoundException('Product not found')
 
             const existingItem = await this.cartItemModel.findOne({
-                where: { cartId: cart.id, productId: dto.productId },
-            });
+                    where: { cartId: cart.id, productId: dto.productId },
+                });
 
-            if (existingItem) {
-                const plainItem = existingItem.get({ plain: true });
-                await existingItem.update({
-                    quantity: plainItem.quantity + dto.quantity,
-                });
-            } else {
-                await this.cartItemModel.create({
-                    cartId: cart.id,
-                    productId: dto.productId,
-                    quantity: dto.quantity,
-                });
-            }
+                if(existingItem) {
+                    const plainItem = existingItem.get({ plain: true });
+                    await existingItem.update({
+                        quantity: plainItem.quantity + dto.quantity,
+                    });
+                } else {
+                    await this.cartItemModel.create({
+                        cartId: cart.id,
+                        productId: dto.productId,
+                        quantity: dto.quantity,
+                    });
+                }
 
             return this.getCart(userId);
-        } catch (err) {
-            throw new InternalServerErrorException('Failed to add item to cart');
+            } catch(err) {
+                throw new InternalServerErrorException('Failed to add item to cart');
+            }
         }
-    }
 
     async reduceItem(
-        userId: number,
-        dto: ReduceCartItemDto,
-    ): Promise<{ success: boolean; message: string; data: GetUnitCartDataDto }> {
-        try {
-            const getCartResponse = await this.getCart(userId);
-            const cart = getCartResponse.data.cart;
+            userId: number,
+            dto: ReduceCartItemDto,
+        ): Promise < { success: boolean; message: string; data: GetUnitCartDataDto } > {
+            try {
+                const getCartResponse = await this.getCart(userId);
+                const cart = getCartResponse.data.cart;
 
-            const existingItem = await this.cartItemModel.findOne({
-                where: { cartId: cart.id, productId: dto.productId },
-            });
+                const existingItem = await this.cartItemModel.findOne({
+                    where: { cartId: cart.id, productId: dto.productId },
+                });
 
-            if (!existingItem) {
-                throw new NotFoundException('Item not found in cart');
-            }
+                if(!existingItem) {
+                    throw new NotFoundException('Item not found in cart');
+                }
 
             const plainItem = existingItem.get({ plain: true });
-            const newQuantity = plainItem.quantity - dto.quantity;
+                const newQuantity = plainItem.quantity - dto.quantity;
 
-            if (newQuantity <= 0) {
-                await existingItem.destroy();
-            } else {
-                await existingItem.update({ quantity: newQuantity });
-            }
-
-            return this.getCart(userId);
-        } catch (err) {
-            throw new InternalServerErrorException('Failed to reduce item from cart');
+                if(newQuantity <= 0) {
+            await existingItem.destroy();
+        } else {
+            await existingItem.update({ quantity: newQuantity });
         }
-    }
 
-    async removeItem(userId: number, productId: number): Promise<{ success: boolean; message: string; data: GetUnitCartDataDto }> {
-        try {
-            const getCartResponse = await this.getCart(userId)
+        return this.getCart(userId);
+    } catch(err) {
+        throw new InternalServerErrorException('Failed to reduce item from cart');
+    }
+}
+
+    async removeItem(userId: number, productId: number): Promise < { success: boolean; message: string; data: GetUnitCartDataDto } > {
+    try {
+        const getCartResponse = await this.getCart(userId)
             const cart = getCartResponse.data.cart
             await this.cartItemModel.destroy({
-                where: { cartId: cart.id, productId },
-            });
-            return this.getCart(userId);
-        } catch (err) {
-            throw new InternalServerErrorException('Failed to remove item from cart');
-        }
+            where: { cartId: cart.id, productId },
+        });
+        return this.getCart(userId);
+    } catch(err) {
+        throw new InternalServerErrorException('Failed to remove item from cart');
     }
+}
 
     async cloneCart(
-        userId: number,
-        dto: CloneCartDto,
-    ): Promise<{ success: boolean; message: string; data: GetUnitCartDataDto }> {
-        try {
-            const getCartResponse = await this.getCart(userId);
-            const cart = getCartResponse.data.cart;
+    userId: number,
+    dto: CloneCartDto,
+): Promise < { success: boolean; message: string; data: GetUnitCartDataDto } > {
+    try {
+        const getCartResponse = await this.getCart(userId);
+        const cart = getCartResponse.data.cart;
 
-            await this.cartItemModel.destroy({ where: { cartId: cart.id } });
+        await this.clearCart(cart.id)
 
             let itemsToCreate: any = [];
-            for (const item of dto.items) {
-                const getProductResponse = await this.productsService.getProductByIdOrUndefined(item.productId)
-                if (!getProductResponse) continue
+        for(const item of dto.items) {
+    const getProductResponse = await this.productsService.getProductByIdOrUndefined(item.productId)
+    if (!getProductResponse) continue
 
-                itemsToCreate.push({
-                    cartId: cart.id,
-                    productId: item.productId,
-                    quantity: item.quantity,
-                });
-            }
+    itemsToCreate.push({
+        cartId: cart.id,
+        productId: item.productId,
+        quantity: item.quantity,
+    });
+}
 
-            if (itemsToCreate.length > 0) {
-                await this.cartItemModel.bulkCreate(itemsToCreate);
-            }
+if (itemsToCreate.length > 0) {
+    await this.cartItemModel.bulkCreate(itemsToCreate);
+}
 
-            return this.getCart(userId);
+return this.getCart(userId);
         } catch (err) {
-            console.error(err)
-            throw new InternalServerErrorException('Failed to clone cart');
-        }
+    console.error(err)
+    throw new InternalServerErrorException('Failed to clone cart');
+}
     }
 
+    async clearCart(cartId: number) {
+    return this.cartItemModel.destroy({ where: { cartId } });
+}
 
 }

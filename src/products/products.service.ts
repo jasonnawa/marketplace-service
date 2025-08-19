@@ -10,6 +10,7 @@ export class ProductsService {
     constructor(@InjectModel(Product) private productModel: typeof Product) { }
 
     async getProducts(query: GetProductsQueryDto): Promise<{ success: boolean, message: string, data: GetAllProductDataDto }> {
+        try {
         const { page = 1, limit = 10, search, category, minPrice, maxPrice } = query;
         const where: any = {};
 
@@ -17,8 +18,8 @@ export class ProductsService {
             where.name = { [Op.iLike]: `%${search}%` };
         }
 
-        if (category) {
-            where.category = category;
+        if (category && category.length > 0) {
+            where.category = { [Op.in]: category };
         }
 
         if (minPrice !== undefined || maxPrice !== undefined) {
@@ -47,6 +48,10 @@ export class ProductsService {
         }
 
         return { success: true, message: 'successfully retrieved products', data };
+    } catch (error) {
+            console.error('Error fetching products:', error);
+            throw new Error('Failed to fetch products');
+        }
     }
     async getProductById(id: number): Promise<{ success: boolean, message: string, data: GetUnitProductDataDto }> {
         const product = await this.productModel.findByPk(id);

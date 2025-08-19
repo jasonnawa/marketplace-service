@@ -17,11 +17,16 @@ import { Product } from './products/product.model';
 import { CartModule } from './cart/cart.module';
 import { Cart } from './cart/models/cart.model';
 import { CartItem } from './cart/models/cart-item.model';
+import { OrdersModule } from './orders/orders.module';
+import { Order } from './orders/models/order.model';
+import { OrderItem } from './orders/models/order-item.model';
+import taxOptionsConfig from './config/tax-options.config';
+import appConfig from './config/app.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, taxOptionsConfig, appConfig],
     }),
     ThrottlerModule.forRoot([
       {
@@ -34,6 +39,7 @@ import { CartItem } from './cart/models/cart-item.model';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const db = configService.get('database');
+        const app = configService.get('app');
         return {
           dialect: db.dialect,
           host: db.host,
@@ -43,14 +49,20 @@ import { CartItem } from './cart/models/cart-item.model';
           database: db.name,
           autoLoadModels: true,
           synchronize: true,
-          models: [User, Product, Cart, CartItem],
+          dialectOptions: {
+            ssl: app.nodeEnv === 'production'
+              ? { require: true, rejectUnauthorized: false }
+              : false,
+          },
+          models: [User, Product, Cart, CartItem, Order, OrderItem],
         };
       },
     }),
     UsersModule,
     AuthModule,
     ProductsModule,
-    CartModule
+    CartModule,
+    OrdersModule
   ],
   controllers: [AppController],
   providers: [

@@ -5,6 +5,9 @@ import { IsOptional, ValidateNested } from 'class-validator';
 import { CartDto } from 'src/cart/dto/cart.dto';
 
 export class UserDto {
+  @ApiPropertyOptional({ example: 1 })
+  id?: number;
+
   @ApiProperty({ example: 'John' })
   firstname: string;
 
@@ -22,4 +25,10 @@ export class UserDto {
   @ValidateNested()
   @Type(() => CartDto)
   cart?: CartDto;
+
+  @ApiPropertyOptional({ example: '2025-08-16T01:45:00Z', description: 'user creation timestamp' })
+  createdAt?: Date;
+
+  @ApiPropertyOptional({ example: '2025-08-16T01:45:00Z', description: 'user last updated timestamp' })
+  updatedAt?: Date;
 }

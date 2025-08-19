@@ -5,6 +5,8 @@ import { ApiResponseWrapper } from 'src/common/swagger/swagger-response';
 import { Public } from 'src/common/decorators/public.decorator';
 import { GetAllProductDataDto, GetUnitProductDataDto } from './dto/products-data.dto';
 import { GetProductsQueryDto } from './dto/products-query.dto';
+import { Throttle } from '@nestjs/throttler';
+
 
 @Controller('products')
 export class ProductsController {
@@ -27,3 +29,4 @@ export class ProductsController {
         return await this.productsService.getProductById(id);
     }
 }
+

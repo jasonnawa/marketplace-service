@@ -7,6 +7,8 @@ export class RegisterUserDataDto {
 }
 
 export class LoginDataDto {
+    @ApiProperty({type: UserDto})
+    user: UserDto
     @ApiProperty({ type: String })
     access_token: string;
     @ApiProperty({ type: String })

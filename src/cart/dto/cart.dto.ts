@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CartItemDto } from './cart-item.dto';
-import { IsInt, IsOptional, ValidateNested, IsArray } from 'class-validator';
+import { IsInt, IsOptional, ValidateNested, IsArray, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CartDto {
@@ -18,4 +18,17 @@ export class CartDto {
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items: CartItemDto[];
+
+  @ApiProperty({ example: 200, description: 'Subtotal of items in the cart before tax' })
+  @IsNumber()
+  subtotal: number;
+
+  @ApiProperty({ example: 20, description: 'Calculated tax for the cart' })
+  @IsNumber()
+  tax: number;
+
+  @ApiProperty({ example: 220, description: 'Total amount including subtotal and tax' })
+  @IsNumber()
+  total: number;
 }
+
